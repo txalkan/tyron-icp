@@ -1,10 +1,10 @@
-# Basic Bitcoin with Syron 
+= Basic Bitcoin with Syron 
 
-## Overview
+== Overview
 
 This tutorial is a work in progress. When completed, it will guide you through deploying a sample SSI Vault to acquire Syron U$ dollars (SU$D) on Bitcoin using the Internet Computer, featuring a https://github.com/dfinity/examples/tree/master/rust/basic_bitcoin[Basic Bitcoin Example].
 
-## Architecture
+== Architecture
 
 image::public/images/syron_get_susd.png[]
 
@@ -20,3 +20,77 @@ The architecture of Syron includes:
 image::public/images/syron_mint_susd.png[]
 
 This architecture ensures easy access to USD liquidity while retaining BTC ownership, fostering a permissionless system with enhanced security and interoperability within the Bitcoin DeFi ecosystem.
+
+== Prerequisites
+
+Commands are provided using macOS as an example.
+
+* [x] Install the https://internetcomputer.org/docs/current/developer-docs/setup/install/index.mdx[Internet Computer SDK]
+
+----
+sh -ci "$(curl -fsSL https://internetcomputer.org/install.sh)"
+----
+
+To verify the installation, run:
+
+----
+dfx --version
+----
+
+* [x] Download https://bitcoin.org/en/download[Bitcoin Core]
+
+After downloading, unpack the .tar.gz file:
+
+----
+tar -xfz bitcoin-25.0-x86_64-apple-darwin.tar.gz
+----
+
+Then, open the bitcoin.conf file and insert the following content:
+
+----
+# Enable regtest mode. This is required to setup a private bitcoin network.
+regtest=1
+
+# Dummy credentials that are required by `bitcoin-cli`.
+rpcuser=ic-btc-integration
+rpcpassword=QPQiNaph19FqUsCrBRN0FII7lyM26B51fAMeBQzCb-E=
+rpcauth=ic-btc-integration:cdf2741387f3a12438f69092f0fdad8e$62081498c98bee09a0dce2b30671123fa561932992ce377585e8e08bb0c11dfa
+----
+
+And start a local Bitcoin runtime with the command:
+
+----
+./bin/bitcoind -conf=$(pwd)/bitcoin.conf -datadir=$(pwd)/data --port=18444
+----
+
+== Deployment
+
+Start a local Internet Computer execution environment:
+
+----
+dfx start --clean --background
+----
+
+In a separate terminal tab, update the submodules recursively:
+
+----
+git submodule update --init --recursive
+----
+
+Deploy the Syron ledger:
+
+----
+make deploy_ledger
+----
+
+Save the ledger canister ID:
+
+----
+export LEDGER_ID=$(dfx canister id icrc1_ledger_syron)
+----
+
+Finally, deploy an SSI Vault using:
+
+----
+make deploy
+----
