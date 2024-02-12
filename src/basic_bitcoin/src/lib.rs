@@ -10,7 +10,7 @@ use ic_cdk_macros::{init, post_upgrade, pre_upgrade, update};
 use std::cell::{Cell, RefCell};
 
 use candid::Principal;
-use ic_ckbtc_minter::{
+use ic_ckbtc_minter_syron::{
     lifecycle::{
         self,
         init::MinterArg
@@ -57,7 +57,7 @@ pub fn init(network: BitcoinNetwork, args: MinterArg) {
             lifecycle::init::init(args);
             schedule_now(TaskType::ProcessLogic);
             schedule_now(TaskType::RefreshFeePercentiles);
-            schedule_now(TaskType::DistributeKytFee);
+            // schedule_now(TaskType::DistributeKytFee);
 
             #[cfg(feature = "self_check")]
             ok_or_die(check_invariants())
