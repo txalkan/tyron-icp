@@ -1,0 +1,31 @@
+{
+  "canisters": {
+    "xrc_demo": {
+      "main": "src/xrc_demo/main.mo",
+      "type": "motoko",
+      "dependencies": ["xrc"]
+    },
+    "xrc": {
+      "type": "custom",
+      "candid": "xrc/xrc.did",
+      "wasm": "xrc/xrc.wasm.gz",
+      "remote": {
+        "candid": "xrc/xrc.did",
+        "id": {
+          "ic": "uf6dk-hyaaa-aaaaq-qaaaq-cai"
+        }
+      }
+    }
+  },
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:4943"
+    }
+  },
+  "defaults": {
+    "replica": {
+      "subnet_type": "system"
+    }
+  },
+  "version": 1
+}

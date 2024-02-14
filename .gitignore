@@ -9,6 +9,9 @@
 
 # dfx temporary files
 .dfx/
+src/xrc_demo/.dfx
 
 # rust
 target/
+
+src/xrc_demo/node_modules

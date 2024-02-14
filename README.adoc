@@ -63,12 +63,14 @@ And start a local Bitcoin runtime with the command:
 ./bin/bitcoind -conf=$(pwd)/bitcoin.conf -datadir=$(pwd)/data --port=18444
 ----
 
-== Deployment
+== Local Deployment
+
+=== Execution Environment
 
 Start a local Internet Computer execution environment:
 
 ----
-dfx start --clean --background
+dfx start --clean
 ----
 
 In a separate terminal tab, update the submodules recursively:
@@ -76,6 +78,8 @@ In a separate terminal tab, update the submodules recursively:
 ----
 git submodule update --init --recursive
 ----
+
+=== Syron Ledger
 
 Deploy the Syron ledger:
 
@@ -89,8 +93,24 @@ Save the ledger canister ID:
 export LEDGER_ID=$(dfx canister id icrc1_ledger_syron)
 ----
 
-Finally, deploy an SSI Vault using:
+=== Exchange Rate Canister
+
+Install dependencies:
 
 ----
-make deploy
+cd src/xrc_demo && npm i
+----
+
+Deploy locally:
+
+----
+dfx deploy
+----
+
+=== Syron Minter
+
+Finally, deploy the Syron minter using:
+
+----
+cd ../.. && make deploy
 ----
