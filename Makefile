@@ -9,8 +9,23 @@ deploy_ledger:
 .PHONY: deploy
 .SILENT: deploy
 deploy:
-	dfx deploy basic_bitcoin_syron --argument '(variant { regtest }, variant { Init = record { mode = variant { ReadOnly }; btc_network = variant { Regtest }; ledger_id = principal "$(LEDGER_ID)"; ecdsa_key_name = "key_1"; min_confirmations = opt 72; retrieve_btc_min_amount = 100_000; max_time_in_queue_nanos = 600_000_000_000 } })'
+	dfx deploy basic_bitcoin_syron --argument '(variant { regtest }, variant { Init = record { mode = variant { ReadOnly }; btc_network = variant { Regtest }; ledger_id = principal "$(LEDGER_ID)"; ecdsa_key_name = "dfx_test_key"; min_confirmations = opt 72; retrieve_btc_min_amount = 100_000; max_time_in_queue_nanos = 600_000_000_000 } })'
 
+# ----
+# export PRINCIPAL=$(dfx identity get-principal)
+# ----
+.PHONY: ssi_vault
+.SILENT: ssi_vault
+ssi_vault:
+	#dfx canister call basic_bitcoin_syron get_btc_address "(record { owner = opt principal \"$(PRINCIPAL)\"; subaccount = null;})"
+	#dfx canister call basic_bitcoin_syron get_btc_address "(record { owner = opt principal \"$(PRINCIPAL)\"})"
+	dfx canister call basic_bitcoin_syron get_btc_address "(record { subaccount=null;})"
+
+.PHONY: reinstall_syron
+.SILENT: reinstall_syron
+reinstall_syron:
+	dfx canister install basic_bitcoin_syron --argument '(variant { regtest }, variant { Init = record { mode = variant { ReadOnly }; btc_network = variant { Regtest }; ledger_id = principal "$(LEDGER_ID)"; ecdsa_key_name = "dfx_test_key"; min_confirmations = opt 72; retrieve_btc_min_amount = 100_000; max_time_in_queue_nanos = 600_000_000_000 } })' --mode=reinstall
+	
 .PHONY: clean
 .SILENT: clean
 clean:
