@@ -13,7 +13,7 @@ image::public/images/syron_get_susd.png[]
 The architecture of Syron includes:
 
 - **Syron U$ Dollar (SU$D)**: A stablecoin pegged to USD, minted by over-collateralizing Bitcoin in Self-Sovereign Identity (SSI) Vaults.
-- **Self-Sovereign Identity (SSI) Vaults**: Hold BTC collateral and manage SU$D minting/burning.
+- **SSI Vaults**: Hold BTC collateral and manage SU$D minting/burning.
 - **Integration with Bitcoin**: Utilizes ICP for seamless integration with Bitcoin network, enabling verification of BTC collateral and transaction management.
 - **Internet Computer Protocol (ICP)**: Facilitates smart contract execution and interoperability.
 - **ckBTC and Elliptic DAO Protocol**: Foundation providing open-source software and reusable features.
@@ -115,4 +115,12 @@ Finally, deploy the Syron minter using:
 
 ----
 cd ../.. && make deploy
+----
+
+=== Self-Sovereign Identity Vault
+
+Obtain the deposit address for your SSI Vault with the following command:
+
+----
+make ssi_vault
 ----
