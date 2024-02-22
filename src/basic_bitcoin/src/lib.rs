@@ -137,6 +137,7 @@ fn post_upgrade(minter_arg: MinterArg) {
 // Syron U$D
 
 fn check_anonymous_caller() {
+    ic_cdk::println!("caller: {}", ic_cdk::caller());
     if ic_cdk::caller() == Principal::anonymous() {
         panic!("anonymous caller not allowed")
     }
@@ -144,6 +145,6 @@ fn check_anonymous_caller() {
 
 #[update]
 async fn get_btc_address(args: GetBtcAddressArgs) -> String {
-    // check_anonymous_caller();
+    check_anonymous_caller();
     updates::get_btc_address::get_btc_address(args).await
 }
