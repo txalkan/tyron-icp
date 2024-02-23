@@ -19,7 +19,7 @@ use ic_ckbtc_minter_syron::{
     }, updates::{
         self,
         get_btc_address::GetBtcAddressArgs,
-        // @review update_balance::{UpdateBalanceArgs, UpdateBalanceError, UtxoStatus},
+        update_balance::{UpdateBalanceArgs, UpdateBalanceError, UtxoStatus},
     }
 };
 
@@ -143,8 +143,20 @@ fn check_anonymous_caller() {
     }
 }
 
+fn check_postcondition<T>(t: T) -> T {
+    #[cfg(feature = "self_check")]
+    ok_or_die(check_invariants());
+    t
+}
+
 #[update]
 async fn get_btc_address(args: GetBtcAddressArgs) -> String {
     check_anonymous_caller();
     updates::get_btc_address::get_btc_address(args).await
+}
+
+#[update]
+async fn update_balance(args: UpdateBalanceArgs) -> Result<Vec<UtxoStatus>, UpdateBalanceError> {
+    check_anonymous_caller();
+    check_postcondition(updates::update_balance::update_balance(args).await)
 }
