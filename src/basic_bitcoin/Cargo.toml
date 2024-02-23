@@ -16,11 +16,10 @@ hex = "0.4.3"
 bitcoin = "0.28.1"
 bs58 = "0.4.0"
 candid = { version = "0.10.3" }
-# candid_derive = { version = "0.6" }
 ic-cdk = "0.12.0"
 ic-cdk-macros = "0.8.3"
 ripemd = "0.1.1"
 serde = "1.0.132"
 sha2 = "0.10.2"
-ic-ckbtc-minter-syron = { git = "https://github.com/txalkan/ic", rev = "ad2829e9b5a901034a18b1d6d2cc5af27864ec62" }
+ic-ckbtc-minter-syron = { git = "https://github.com/txalkan/ic", rev = "26cd5d9218da77831c96c4f61cb587d4efe8a94a" }
 # elliptic_dao = { git = "https://github.com/txalkan/elliptic_dao", package = "protocol-canister" }
