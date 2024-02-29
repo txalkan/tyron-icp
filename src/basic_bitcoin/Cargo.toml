@@ -21,5 +21,5 @@ ic-cdk-macros = "0.8.3"
 ripemd = "0.1.1"
 serde = "1.0.132"
 sha2 = "0.10.2"
-ic-ckbtc-minter-syron = { git = "https://github.com/txalkan/ic", rev = "26cd5d9218da77831c96c4f61cb587d4efe8a94a" }
+ic-ckbtc-minter-syron = { git = "https://github.com/txalkan/ic", rev = "103a768093f1bef0a9aeed8a391d55e89a3af0b2" }
 # elliptic_dao = { git = "https://github.com/txalkan/elliptic_dao", package = "protocol-canister" }

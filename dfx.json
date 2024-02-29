@@ -1,7 +1,12 @@
 {
   "version": 1,
   "canisters": {
-    "icrc1_ledger_syron": {
+    "icrc1_ledger_syron_btc": {
+      "type": "custom",
+      "candid": "src/ledger/icrc1_ledger.did",
+      "wasm": "src/ledger/ic-icrc1-ledger.wasm.gz"
+    },
+    "icrc1_ledger_syron_susd": {
       "type": "custom",
       "candid": "src/ledger/icrc1_ledger.did",
       "wasm": "src/ledger/ic-icrc1-ledger.wasm.gz"
