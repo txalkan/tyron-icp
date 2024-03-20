@@ -57,10 +57,18 @@ type InitArgs = record {
     // The minter will interact with this Bitcoin network.
     btc_network : BtcNetwork;
 
-    // The principal of the Syron Ledger that handles SU$D transfers.
+    // The principal of the Syron Ledger that handles BTC transfers.
     // The default account of the Syron Minter must be configured as
     // the minting account of the ledger.
     ledger_id : principal;
+    
+    // The principal of the Syron Ledger that handles SU$D transfers.
+    // The default account of the Syron Minter must be configured as
+    // the minting account of the ledger.
+    susd_id : principal;
+
+    // The principal of the Exchange Rate Canister that handles the oracle prices.
+    xrc_id : principal;
 
     // The name of the ECDSA key to use.
     // E.g., "dfx_test_key" on the local replica.
@@ -111,12 +119,13 @@ type UpgradeArgs = record {
 };
 
 type MinterArg = variant {
-    Init : InitArgs;
-    Upgrade : opt UpgradeArgs;
+    Init: InitArgs;
+    Upgrade: opt UpgradeArgs;
 };
 
 // The result of an [update_balance] call.
 type UtxoStatus = variant {
+    TransferInscription: Utxo;
     // The minter ignored this UTXO because UTXO's value is too small to pay
     // the KYT fees. This state is final, retrying [update_balance] call will
     // have no effect on this UTXO.
@@ -165,8 +174,15 @@ type PendingUtxo = record {
     confirmations: nat32;
 };
 
+type MinterInfo = record {
+    min_confirmations : nat32;
+    retrieve_btc_min_amount : nat64;
+    kyt_fee : nat64;
+};
+
 service : (network, MinterArg) -> {
     "get_p2pkh_address": () -> (bitcoin_address);
+    "get_p2wpkh_address": () -> (bitcoin_address);
 
     "get_balance": (address: bitcoin_address) -> (satoshi);
 
@@ -184,8 +200,8 @@ service : (network, MinterArg) -> {
     //
     // If the owner is not set, it defaults to the caller's principal.
     "get_btc_address": (record {
-      owner: opt principal;
-      subaccount : opt blob;
+      /*owner: opt principal;
+      subaccount : opt blob;*/
       ssi: bitcoin_address
     }) -> (bitcoin_address);
 
@@ -197,5 +213,11 @@ service : (network, MinterArg) -> {
     //
     // * A BTC deposit was made to the bitcoin_address of the SSI Vault, which the
     //   [get_btc_address] endpoint returns.
-    update_balance : (record { owner: opt principal; subaccount : opt blob; ssi: text }) -> (variant { Ok : vec UtxoStatus; Err : UpdateBalanceError });
+    "update_balance" : (record { owner: opt principal; subaccount : opt blob; ssi: text }) -> (variant { Ok: vec UtxoStatus; Err: UpdateBalanceError });
+    "get_susd" : (record { ssi: text }) -> (text);
+    
+    "get_subaccount": ( ssi: bitcoin_address ) -> (blob);
+    "get_xr": () -> (nat64);
+
+    "get_minter_info": () -> (MinterInfo) query;
 }

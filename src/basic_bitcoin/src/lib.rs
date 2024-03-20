@@ -3,10 +3,11 @@ mod bitcoin_wallet;
 mod ecdsa_api;
 mod types;
 
-use ic_cdk::api::management_canister::bitcoin::{
+use ic_cdk::{api::management_canister::bitcoin::{
     BitcoinNetwork, GetUtxosResponse, MillisatoshiPerByte,
-};
+}, query};
 use ic_cdk_macros::{init, post_upgrade, pre_upgrade, update};
+use types::SendRequest;
 use std::cell::{Cell, RefCell};
 
 use candid::Principal;
@@ -14,14 +15,18 @@ use ic_ckbtc_minter_syron::{
     lifecycle::{
         self,
         init::MinterArg
-    }, state::eventlog::Event, storage::record_event, tasks::{
-        schedule_now, TaskType
-    }, updates::{
-        self,
-        get_btc_address::GetBtcAddressArgs,
-        update_balance::{UpdateBalanceArgs, UpdateBalanceError, UtxoStatus},
-    }
+    },
+    management::get_exchange_rate,
+    state::{eventlog::Event, read_state},
+    storage::record_event,
+    tasks::{schedule_now, TaskType},
+    updates::{
+        self, get_btc_address::GetBtcAddressArgs, get_withdrawal_account::compute_subaccount, update_balance::{UpdateBalanceArgs, UpdateBalanceError, UtxoStatus}
+    },
+    MinterInfo
 };
+
+use icrc_ledger_types::icrc1::account::Subaccount;
 
 thread_local! {
     // The bitcoin network to connect to.
@@ -29,6 +34,8 @@ thread_local! {
     // When developing locally this should be `Regtest`.
     // When deploying to the IC this should be `Testnet`.
     // `Mainnet` is currently unsupported.
+
+    // @review (mainnet)
     static NETWORK: Cell<BitcoinNetwork> = Cell::new(BitcoinNetwork::Testnet);
 
     // The derivation path to use for ECDSA secp256k1.
@@ -99,8 +106,17 @@ pub async fn get_p2pkh_address() -> String {
     bitcoin_wallet::get_p2pkh_address(network, key_name, derivation_path).await
 }
 
-/// Sends the given amount of bitcoin from this canister to the given address.
-/// Returns the transaction ID.
+#[update]
+pub async fn get_p2wpkh_address() -> String {
+    let derivation_path = DERIVATION_PATH.with(|d| d.clone());
+    let key_name = KEY_NAME.with(|kn| kn.borrow().to_string());
+    bitcoin_wallet::get_p2wpkh_address(key_name, derivation_path).await
+}
+
+/// Send the given amount of bitcoin from this canister to the given address.
+/// Return the transaction ID.
+
+/// 1. Using P2PKH
 #[update]
 pub async fn send(request: types::SendRequest) -> String {
     let derivation_path = DERIVATION_PATH.with(|d| d.clone());
@@ -116,6 +132,24 @@ pub async fn send(request: types::SendRequest) -> String {
     .await;
 
     tx_id.to_string()
+}
+
+/// 2. Using P2WPKH
+#[update]
+pub async fn transfer(request: types::SendRequest) -> String {
+    let derivation_path = DERIVATION_PATH.with(|d| d.clone());
+    let network = NETWORK.with(|n| n.get());
+    let key_name = KEY_NAME.with(|kn| kn.borrow().to_string());
+    let tx_id = bitcoin_wallet::send_p2wpkh(
+        network,
+        derivation_path,
+        key_name,
+        request.destination_address,
+        request.amount_in_satoshi,
+    )
+    .await;
+    let res = std::str::from_utf8(&tx_id).unwrap().to_string();
+    res
 }
 
 #[pre_upgrade]
@@ -134,14 +168,14 @@ fn post_upgrade(minter_arg: MinterArg) {
     init(network, minter_arg);
 }
 
-// Syron U$D
+// Tyron's stablecoin metaprotocol
 
-fn check_anonymous_caller() {
-    ic_cdk::println!("caller: {}", ic_cdk::caller());
-    if ic_cdk::caller() == Principal::anonymous() {
-        panic!("anonymous caller not allowed")
-    }
-}
+// fn check_anonymous_caller() {
+//     ic_cdk::println!("caller: {}", ic_cdk::caller());
+//     if ic_cdk::caller() == Principal::anonymous() {
+//         panic!("anonymous caller not allowed")
+//     }
+// }
 
 fn check_postcondition<T>(t: T) -> T {
     #[cfg(feature = "self_check")]
@@ -151,12 +185,54 @@ fn check_postcondition<T>(t: T) -> T {
 
 #[update]
 async fn get_btc_address(args: GetBtcAddressArgs) -> String {
-    check_anonymous_caller();
+    // check_anonymous_caller();
     updates::get_btc_address::get_btc_address(args).await
 }
 
 #[update]
 async fn update_balance(args: UpdateBalanceArgs) -> Result<Vec<UtxoStatus>, UpdateBalanceError> {
-    check_anonymous_caller();
+    // check_anonymous_caller();
     check_postcondition(updates::update_balance::update_balance(args).await)
+}
+
+#[update]
+async fn get_susd(args: UpdateBalanceArgs) -> String {
+    let destination_address = (&args.ssi).to_string();
+
+    // @dev 1. Update Balance (the user's Vault MUST have BTC deposit confirmed)
+    let _ = check_postcondition(updates::update_balance::update_balance(args).await);
+    
+    let req = SendRequest{
+        destination_address,
+        amount_in_satoshi: 546
+    };
+
+    // @dev 2. Transfer stablecoin from minter to user address
+    let tx_id = transfer(req).await;
+    tx_id
+}
+
+#[update]
+async fn get_subaccount(ssi: String) -> Subaccount {
+    compute_subaccount(1, &ssi)
+}
+
+#[update]
+async fn get_xr() -> u64 {
+    let xr = match get_exchange_rate().await {
+        Ok(result) => result,
+        Err(_err) => {
+           return 0
+        }
+    };
+    xr.unwrap().rate
+}
+
+#[query]
+fn get_minter_info() -> MinterInfo {
+    read_state(|s| MinterInfo {
+        kyt_fee: s.kyt_fee,
+        min_confirmations: s.min_confirmations,
+        retrieve_btc_min_amount: s.retrieve_btc_min_amount,
+    })
 }

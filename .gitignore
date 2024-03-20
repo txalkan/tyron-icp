@@ -15,3 +15,6 @@ src/xrc_demo/.dfx
 target/
 
 src/xrc_demo/node_modules
+
+# generated files (dfx generate)
+src/declarations/

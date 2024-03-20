@@ -21,5 +21,8 @@ ic-cdk-macros = "0.8.3"
 ripemd = "0.1.1"
 serde = "1.0.132"
 sha2 = "0.10.2"
-ic-ckbtc-minter-syron = { git = "https://github.com/txalkan/ic", rev = "103a768093f1bef0a9aeed8a391d55e89a3af0b2" }
-# elliptic_dao = { git = "https://github.com/txalkan/elliptic_dao", package = "protocol-canister" }
+ic-ckbtc-minter-syron = { git = "https://github.com/txalkan/ic", rev = "efd042729aede65e0e4110eac018e6234c54e5a4" }
+icrc-ledger-types = { git = "https://github.com/txalkan/ic", rev = "efd042729aede65e0e4110eac018e6234c54e5a4" }
+ic-ic00-types = { git = "https://github.com/txalkan/ic", rev = "efd042729aede65e0e4110eac018e6234c54e5a4" }
+ic-btc-interface = { git = "https://github.com/dfinity/bitcoin-canister", rev = "d2bff8aa0c2aa9485d839f5ee11e829df5666479" }
+serde_bytes = "0.11"
